@@ -1,4 +1,5 @@
 @echo off
 set "VENV_PYTHON=%~dp0venv\Scripts\python.exe"
 set "PYTHONPATH=%~dp0"
-start cmd /k "%VENV_PYTHON% -m uvicorn src.main:app --port 8000 --reload"
+"%VENV_PYTHON%" src/cli.py
+pause
