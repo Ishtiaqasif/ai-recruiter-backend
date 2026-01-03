@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-dotenv
+langchain
+langchain-community
+langchain-google-genai
+langchain-ollama
+langchain-openai
+pymongo
+motor
+python-multipart
+pydantic
+tiktoken
+sentence-transformers
+pypdf
+langchain-mongodb
