@@ -57,6 +57,18 @@ APP_API_KEY=your_secure_api_key
 3.  **Persistence**:
     CVs and JSON embeddings are persisted in the `./data` directory, which is mounted to the container.
 
+### Manual Docker Build
+
+If you prefer to use standard docker commands:
+
+```bash
+# Build
+docker build -t ai-recruiter-backend .
+
+# Run
+docker run -d -p 8000:8000 --env-file .env --name ai-recruiter ai-recruiter-backend
+```
+
 ## Running Locally
 
 1.  **Create Virtual Environment**:
