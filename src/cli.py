@@ -2,7 +2,7 @@ import asyncio
 import os
 import glob
 from src.services.chat import ask_question
-from src.services.ingestion import ingest_single_cv
+from src.services.ingestion import ingest_single_cv, ingest_directory
 from src.utils.formatting import print_ingestion_info
 from src.database import get_db_client, DB_NAME, COLLECTION_NAME as RESUME_COLLECTION
 
@@ -18,31 +18,33 @@ async def process_ingestion(path: str, session_id: str):
         print("Ingestion cancelled.")
         return
 
-    files_to_process = []
     if os.path.isdir(path):
-        # Recursive search for pdf and txt files
-        files_to_process.extend(glob.glob(os.path.join(path, "**/*.pdf"), recursive=True))
-        files_to_process.extend(glob.glob(os.path.join(path, "**/*.txt"), recursive=True))
-        print(f"Found {len(files_to_process)} files in directory.")
+        summary = await ingest_directory(path, session_id)
+        print(f"\nIngestion Summary:")
+        print(f"  Total: {summary['total']}")
+        print(f"  Successful: {summary['successful']}")
+        print(f"  Failed: {summary['failed']}")
+        if summary['errors']:
+            print("  Errors:")
+            for err in summary['errors']:
+                print(f"    - {err}")
     else:
-        files_to_process.append(path)
-
-    for file_path in files_to_process:
-        print(f"Processing: {file_path}")
+        print(f"Processing: {path}")
         try:
             content = ""
-            if file_path.lower().endswith(".pdf"):
+            if path.lower().endswith(".pdf"):
                 from langchain_community.document_loaders import PyPDFLoader
-                loader = PyPDFLoader(file_path)
+                loader = PyPDFLoader(path)
                 docs = loader.load()
                 content = "\n".join([d.page_content for d in docs])
             else:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(path, "r", encoding="utf-8") as f:
                     content = f.read()
 
-            await ingest_single_cv(content, os.path.basename(file_path), session_id)
+            await ingest_single_cv(content, os.path.basename(path), session_id)
+            print("Ingestion successful.")
         except Exception as e:
-            print(f"Failed to ingest {file_path}: {e}")
+            print(f"Failed to ingest {path}: {e}")
 
 async def handle_user_input(user_input, session_id):
     if user_input.startswith("/ingest"):

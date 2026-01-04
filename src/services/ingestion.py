@@ -1,9 +1,12 @@
 import hashlib
+import os
+import glob
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document as LCDocument
 from src.database import get_vector_store, DB_NAME, COLLECTION_NAME
 from src.utils.parsing import extract_email, extract_name, extract_address, extract_job_role
 from src.utils.formatting import generate_id
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 
 async def ingest_single_cv(full_content: str, source_name: str, session_id: str):
     # Only Mongo
@@ -79,3 +82,46 @@ def _create_chunks(content, source, session_id, email, name, role, content_hash=
         documents.append(LCDocument(page_content=enriched_content, metadata=metadata))
     
     return documents
+
+async def ingest_directory(directory_path: str, session_id: str):
+    """
+    Ingest all .txt and .pdf files from a directory into the vector store.
+    Fault-tolerant: continues even if individual files fail.
+    """
+    if not os.path.exists(directory_path):
+        raise ValueError(f"Directory '{directory_path}' not found.")
+
+    files_to_process = []
+    files_to_process.extend(glob.glob(os.path.join(directory_path, "**/*.pdf"), recursive=True))
+    files_to_process.extend(glob.glob(os.path.join(directory_path, "**/*.txt"), recursive=True))
+
+    summary = {
+        "total": len(files_to_process),
+        "successful": 0,
+        "failed": 0,
+        "errors": []
+    }
+
+    if not files_to_process:
+        return summary
+
+    for file_path in files_to_process:
+        try:
+            content = ""
+            if file_path.lower().endswith(".pdf"):
+                loader = PyPDFLoader(file_path)
+                docs = loader.load()
+                content = "\n".join([d.page_content for d in docs])
+            else:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+
+            await ingest_single_cv(content, os.path.basename(file_path), session_id)
+            summary["successful"] += 1
+        except Exception as e:
+            error_msg = f"Failed to ingest {os.path.basename(file_path)}: {str(e)}"
+            print(error_msg)
+            summary["failed"] += 1
+            summary["errors"].append(error_msg)
+
+    return summary

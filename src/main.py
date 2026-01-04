@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 # Import services
-from src.services.ingestion import ingest_single_cv
+from src.services.ingestion import ingest_single_cv, ingest_directory
 from src.services.chat import ask_question
 from src.database import get_db_client, DB_NAME, COLLECTION_NAME
 from src.config import ALLOWED_ORIGINS, APP_API_KEY
@@ -112,6 +112,12 @@ class IngestTextRequest(BaseModel):
 class WipeSessionRequest(BaseModel):
     sessionId: str
 
+class IngestionSummaryResponse(BaseModel):
+    total: int
+    successful: int
+    failed: int
+    errors: list[str]
+
 class StandardResponse(BaseModel):
     status: str
     message: str
@@ -182,6 +188,19 @@ async def ingest_text(
     try:
         await ingest_single_cv(ingest_req.text, "raw_text_input", ingest_req.sessionId)
         return {"status": "success", "message": "Ingested text"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/ingest/sample", tags=["Ingestion"], summary="Ingest Sample Data (data/top10)", response_model=IngestionSummaryResponse, dependencies=[Depends(get_api_key)])
+@limiter.limit("5/minute")
+async def ingest_sample_data(
+    request: Request,
+    ingest_req: WipeSessionRequest # Reuse sessionId request model
+):
+    try:
+        sample_dir = os.path.join(os.getcwd(), "data", "top10")
+        summary = await ingest_directory(sample_dir, ingest_req.sessionId)
+        return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
