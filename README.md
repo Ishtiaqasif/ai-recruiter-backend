@@ -21,7 +21,9 @@ A robust RAG-based backend for an AI-powered recruitment assistant. This system 
 
 ## Configuration
 
-Create a `.env` file in the root directory (see `.env.example` if available, or use the reference below):
+Create `.env.local` (for running locally) and `.env.docker` (for Docker) in the root directory.
+
+Use `.env.docker` for Docker Compose, ensuring `LOCAL_LLM_BASE_URL` uses `host.docker.internal` for Ollama.
 
 ```ini
 # --- LLM Provider ---

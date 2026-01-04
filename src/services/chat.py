@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 from src.database import get_vector_store
-from src.config import OPENAI_LLM_MODEL, GOOGLE_LLM_MODEL, LOCAL_LLM_MODEL, LLM_PROVIDER
+from src.config import OPENAI_LLM_MODEL, GOOGLE_LLM_MODEL, LOCAL_LLM_MODEL, LLM_PROVIDER, GOOGLE_API_KEY
 # Import specific Chat models as needed, or use a factory. 
 # Re-using the logic from old chat.py but placing here.
 from langchain_openai import ChatOpenAI
@@ -16,9 +16,9 @@ def get_llm():
     elif provider in ["ollama", "local"]:
         return ChatOllama(model=LOCAL_LLM_MODEL, temperature=0.7)
     elif provider == "google":
-        return ChatGoogleGenerativeAI(model=GOOGLE_LLM_MODEL, temperature=0.7)
+        return ChatGoogleGenerativeAI(model=GOOGLE_LLM_MODEL, api_key=GOOGLE_API_KEY)
     else:
-        return ChatGoogleGenerativeAI(model=GOOGLE_LLM_MODEL, temperature=0.7)
+        return ChatGoogleGenerativeAI(model=GOOGLE_LLM_MODEL, api_key=GOOGLE_API_KEY)
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
@@ -27,15 +27,7 @@ async def ask_question(question: str, session_id: str):
     docs=[]
     vector_store = get_vector_store()
     
-    # Configure filter based on provider
-    search_kwargs = {"k": 5}
-    
-    # For MongoDB vector-only index, use pre_filter (or filter in LangChain generic)
-    # This filters BEFORE vector search, ensuring we find docs in the session.
-    search_kwargs["pre_filter"] = {"sessionId": session_id}
-    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
-    docs = await retriever.ainvoke(question)
-    
+    docs = vector_store.similarity_search(question, pre_filter={"sessionId": session_id})
     
     context = format_docs(docs)
 

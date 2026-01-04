@@ -2,11 +2,11 @@ services:
   backend:
     build: .
     ports:
-      - "8000:8000"
+      - "8000:7860"
     volumes:
-      - ./data:/app/data
+      - ./data:/home/user/app/data
     env_file:
-      - .env
+      - .env.docker
     environment:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     restart: unless-stopped
