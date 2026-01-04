@@ -1,3 +1,13 @@
+---
+title: AI Recruiter Backend
+emoji: 🤖
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # AI Recruiter Backend
 
 A robust RAG-based backend for an AI-powered recruitment assistant. This system ingests CVs (PDF/Text), stores embeddings in MongoDB or a local JSON store, and allows recruiters to chat with their candidate database using advanced LLMs (OpenAI, Google Gemini, Ollama).
