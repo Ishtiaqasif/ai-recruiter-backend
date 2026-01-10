@@ -120,3 +120,29 @@ docker run -d -p 8000:8000 --env-file .env --name ai-recruiter ai-recruiter-back
     -   `/chat`: 20 requests/minute
     -   `/ingest`: 10 requests/minute
 -   **CORS**: Restricted to `ALLOWED_ORIGINS`.
+## Deployment to Hugging Face Spaces
+
+This project is configured for automated deployment to Hugging Face Spaces using GitHub Actions.
+
+### Automated Sync Setup
+1.  **Hugging Face Space**: Create a new Docker Space on Hugging Face.
+2.  **GitHub Secret**: In your GitHub repository, go to **Settings > Secrets and variables > Actions** and add a secret named `HF_TOKEN` with your Hugging Face write token.
+3.  **Branch**: Any push to the `main` branch will automatically sync to your Hugging Face Space repository.
+
+### Manual Configuration
+You must configure the following Secrets in your Hugging Face Space settings:
+- `GOOGLE_API_KEY`
+- `MONGODB_URI`
+- `APP_API_KEY`
+
+And these Variables:
+- `LLM_PROVIDER`: `google`
+- `EMBEDDING_LLM_PROVIDER`: `google`
+- `MONGODB_DB_NAME`: `ai-recruiter-db`
+- `MONGODB_COLLECTION`: `resumes`
+- `MONGODB_VECTOR_INDEX`: `idx_0`
+- `GOOGLE_LLM_MODEL`: `gemini-1.5-flash`
+- `GOOGLE_EMBEDDING_MODEL`: `text-embedding-004`
+- `QUERY_TRANSLATION_TYPE`: `multi_query` (or your preferred technique)
+
+For detailed deployment steps, see [DEPLOY_TO_HF.md](file:///c:/Users/ishti/Documents/Code/AI/ai-recruiter/ai-recruiter-backend/DEPLOY_TO_HF.md).
