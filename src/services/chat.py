@@ -1,8 +1,7 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 from src.database import get_vector_store
-from src.config import OPENAI_LLM_MODEL, GOOGLE_LLM_MODEL, LOCAL_LLM_MODEL, LLM_PROVIDER, GOOGLE_API_KEY
-# Import specific Chat models as needed, or use a factory. 
-# Re-using the logic from old chat.py but placing here.
+from src.config import OPENAI_LLM_MODEL, GOOGLE_LLM_MODEL, LOCAL_LLM_MODEL, LLM_PROVIDER, GOOGLE_API_KEY, QUERY_TRANSLATION_TYPE
+from src.services.query_translation import TranslatorFactory, QueryTranslationService
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
@@ -24,10 +23,19 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 async def ask_question(question: str, session_id: str):
-    docs=[]
     vector_store = get_vector_store()
+    llm = get_llm()
     
-    docs = vector_store.similarity_search(question, pre_filter={"sessionId": session_id})
+    # Initialize Query Translation
+    translator = TranslatorFactory.get_translator(QUERY_TRANSLATION_TYPE, llm=llm)
+    translation_service = QueryTranslationService(translator)
+    
+    # Retrieve documents using translation (handles multi-query, decomposition, etc.)
+    docs = await translation_service.retrieve_with_translation(
+        query=question, 
+        vector_store=vector_store, 
+        session_id=session_id
+    )
     
     context = format_docs(docs)
 
@@ -46,6 +54,5 @@ async def ask_question(question: str, session_id: str):
         HumanMessage(content=question)
     ]
     
-    llm = get_llm()
     response = await llm.ainvoke(messages)
     return response.content

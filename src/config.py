@@ -38,3 +38,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 APP_API_KEY = os.getenv("APP_API_KEY")
 
+# Query Translation
+# Options: multi_query, hyde, decomposition, step_back, identity
+QUERY_TRANSLATION_TYPE = os.getenv("QUERY_TRANSLATION_TYPE", "identity").lower()
+
