@@ -34,11 +34,23 @@ GOOGLE_EMBEDDING_MODEL = os.getenv("GOOGLE_EMBEDDING_MODEL")
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+from src.core.constants import LangSmithConstants, QueryTranslationConstants
+
 # Security
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 APP_API_KEY = os.getenv("APP_API_KEY")
 
 # Query Translation
 # Options: multi_query, hyde, decomposition, step_back, identity
-QUERY_TRANSLATION_TYPE = os.getenv("QUERY_TRANSLATION_TYPE", "identity").lower()
+QUERY_TRANSLATION_TYPE = os.getenv("QUERY_TRANSLATION_TYPE", QueryTranslationConstants.DEFAULT_STRATEGY).lower()
+
+# LangSmith Tracing
+LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
+
+if LANGCHAIN_API_KEY:
+    os.environ["LANGCHAIN_TRACING_V2"] = LangSmithConstants.TRACING_V2
+    os.environ["LANGCHAIN_ENDPOINT"] = LangSmithConstants.ENDPOINT
+    os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
+    os.environ["LANGCHAIN_PROJECT"] = LangSmithConstants.PROJECT_NAME
+    # LangChain will now automatically trace all calls
 
