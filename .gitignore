@@ -38,3 +38,4 @@ ENV/
 # Project Data
 data/*
 !data/top100
+!data/top10

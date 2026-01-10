@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code with correct ownership
 COPY --chown=user src ./src
+COPY --chown=user data ./data
 
 # Expose port (Hugging Face Spaces expects 7860)
 EXPOSE 7860
