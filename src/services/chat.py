@@ -2,6 +2,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.database import get_vector_store
 from src.config import OPENAI_LLM_MODEL, GOOGLE_LLM_MODEL, LOCAL_LLM_MODEL, LLM_PROVIDER, GOOGLE_API_KEY, QUERY_TRANSLATION_TYPE
 from src.services.query_translation import TranslatorFactory, QueryTranslationService
+from src.core.constants import PrototypeConstants
+from src.database.helpers import is_session_empty
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
@@ -30,11 +32,16 @@ async def ask_question(question: str, session_id: str):
     translator = TranslatorFactory.get_translator(QUERY_TRANSLATION_TYPE, llm=llm)
     translation_service = QueryTranslationService(translator)
     
+    effective_session_id = session_id
+    if is_session_empty(session_id):
+        print(f"Session '{session_id}' is empty. Falling back to prototype sample data ('{PrototypeConstants.SAMPLE_SESSION_ID}')...")
+        effective_session_id = PrototypeConstants.SAMPLE_SESSION_ID
+
     # Retrieve documents using translation (handles multi-query, decomposition, etc.)
     docs = await translation_service.retrieve_with_translation(
         query=question, 
         vector_store=vector_store, 
-        session_id=session_id
+        session_id=effective_session_id
     )
     
     context = format_docs(docs)

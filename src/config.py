@@ -54,3 +54,5 @@ if LANGCHAIN_API_KEY:
     os.environ["LANGCHAIN_PROJECT"] = LangSmithConstants.PROJECT_NAME
     # LangChain will now automatically trace all calls
 
+# Startup Hacks
+ENABLE_SAMPLE_SEEDING = os.getenv("ENABLE_SAMPLE_SEEDING", "false").lower() == "true"
