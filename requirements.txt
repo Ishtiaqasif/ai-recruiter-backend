@@ -14,3 +14,4 @@ tiktoken
 pypdf
 langchain-mongodb
 slowapi
+langsmith
