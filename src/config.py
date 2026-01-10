@@ -56,3 +56,4 @@ if LANGCHAIN_API_KEY:
 
 # Startup Hacks
 ENABLE_SAMPLE_SEEDING = os.getenv("ENABLE_SAMPLE_SEEDING", "false").lower() == "true"
+SAMPLE_DATA_DIR = os.getenv("SAMPLE_DATA_DIR", "top100")

@@ -2,7 +2,7 @@ import os
 from src.services.ingestion import ingest_directory
 from src.core.constants import PrototypeConstants
 from src.database.helpers import is_session_empty
-from src.config import ENABLE_SAMPLE_SEEDING
+from src.config import ENABLE_SAMPLE_SEEDING, SAMPLE_DATA_DIR
 
 async def seed_prototype_data_if_needed():
     """Seeds sample data only if ENABLE_SAMPLE_SEEDING is True and the session is empty."""
@@ -17,7 +17,7 @@ async def seed_prototype_data_if_needed():
         print(f"Sample data already exists for session '{session_id}'.")
         return
 
-    sample_dir = os.path.join(os.getcwd(), "data", "top10")
+    sample_dir = os.path.join(os.getcwd(), "data", SAMPLE_DATA_DIR)
     if not os.path.exists(sample_dir):
         print(f"Warning: Sample directory '{sample_dir}' not found. Seeding skipped.")
         return
