@@ -20,6 +20,8 @@ from src.services.ingestion import ingest_single_cv, ingest_directory
 from src.services.chat import ask_question
 from src.database import get_db_client, DB_NAME, COLLECTION_NAME
 from src.config import ALLOWED_ORIGINS, APP_API_KEY
+from src.core.constants import PrototypeConstants
+from src.services.prototype_seeding import seed_prototype_data_if_needed
 
 load_dotenv()
 
@@ -82,6 +84,11 @@ app.add_middleware(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+@app.on_event("startup")
+async def startup_event():
+    # Automated Seeding for Prototypes
+    await seed_prototype_data_if_needed()
 
 # Standardized Error Handling
 @app.exception_handler(Exception)
